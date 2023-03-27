@@ -30,31 +30,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.twelvemonkeys.fxiio;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.PixelReader;
-import javafx.scene.image.WritableImage;
-
-import javax.imageio.ImageTypeSpecifier;
-import java.awt.*;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
+import javax.imageio.ImageTypeSpecifier;
+import javafx.scene.image.*;
 
 /**
  * Wrapper class for JavaFX {@link Image} and {@link WritableImage} to masquerade as a {@link BufferedImage}.
  */
-final class FXBufferedImage extends BufferedImage {
+public final class FXBufferedImage extends BufferedImage {
 
     private static final ColorSpace sRGB = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 
     public FXBufferedImage(final Image fxImage) {
-        this(getColorModel(fxImage), new FXWritableRaster(fxImage, crateSampleModel(fxImage), PixelReaderDataBuffer.createDataBuffer(fxImage)));
+        this(getColorModel(fxImage), new FXWritableRaster(fxImage, createSampleModel(fxImage), PixelReaderDataBuffer.createDataBuffer(fxImage)));
     }
 
     public FXBufferedImage(final WritableImage fxImage, final ImageTypeSpecifier spec) {
         // TODO: Create a Color model, sample model and raster, compatible with spec!
         this(spec.getColorModel(), new FXWritableRaster(fxImage,
-                                                        crateSampleModel(fxImage).createSubsetSampleModel(createIndicies(spec.getNumBands())),
+                                                        createSampleModel(fxImage).createSubsetSampleModel(createIndicies(spec.getNumBands())),
 //                                                        spec.getSampleModel((int) fxImage.getWidth(), (int) fxImage.getHeight()),
                                                         PixelReaderDataBuffer.createDataBuffer(fxImage)));
     }
@@ -109,7 +105,7 @@ final class FXBufferedImage extends BufferedImage {
         }
     }
 
-    private static SampleModel crateSampleModel(final Image image) {
+    private static SampleModel createSampleModel(final Image image) {
         PixelReader pixelReader = image.getPixelReader();
 
         @SuppressWarnings("rawtypes")
@@ -118,7 +114,7 @@ final class FXBufferedImage extends BufferedImage {
         switch (pixelFormat.getType()) {
             case INT_ARGB_PRE:
             case INT_ARGB:
-                return new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, (int) image.getWidth(), (int) image.getHeight(), new int[] {0xFF000000, 0xFF0000, 0xFF00, 0xFF});
+                return new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, (int) image.getWidth(), (int) image.getHeight(), new int[] {0xFF0000, 0xFF00, 0xFF, 0xFF000000});
             case BYTE_BGRA_PRE:
             case BYTE_BGRA:
             case BYTE_RGB:
